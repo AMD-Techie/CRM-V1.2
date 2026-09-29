@@ -41,6 +41,7 @@ import {
     AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend, ScatterChart, Scatter, ZAxis
 } from 'recharts';
 import { formatCurrency } from '../lib/utils';
+import ActivityIntensityHeatmap from './ActivityIntensityHeatmap';
 
 interface DashboardProps {
   leads: Lead[];
@@ -1158,94 +1159,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
               );
 
           case 'activity_intensity_heatmap':
-              {
-                  const { data, totalCalls, totalMeetings, avgDaily } = activityIntensityHeatmapData;
-                  return (
-                      <ChartWidget 
-                          key={widget.id} 
-                          title={widget.label} 
-                          subtitle="Scatter density of customer telephone outreach and scheduled sessions across 30 days"
-                          className={colSpanClass}
-                          headerIcon={IconActivity}
-                      >
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 text-xs">
-                              <div>
-                                  <span className="text-slate-400 font-semibold block">Total Calls (30D)</span>
-                                  <span className="text-xl font-bold font-mono text-indigo-600 dark:text-indigo-400 tabular-nums">{totalCalls}</span>
-                              </div>
-                              <div>
-                                  <span className="text-slate-400 font-semibold block">Total Meetings</span>
-                                  <span className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">{totalMeetings}</span>
-                              </div>
-                              <div>
-                                  <span className="text-slate-400 font-semibold block">Daily Frequency</span>
-                                  <span className="text-xl font-bold font-mono text-slate-800 dark:text-slate-200 tabular-nums">{avgDaily} / day</span>
-                              </div>
-                              <div>
-                                  <span className="text-slate-400 font-semibold block">Activity Pacing</span>
-                                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 block mt-1">+15.2% vs prev 30d</span>
-                              </div>
-                          </div>
-
-                          <div className="flex-1 w-full min-h-[140px] overflow-x-auto custom-scrollbar">
-                              <div className="min-w-[650px] h-full">
-                                  <ResponsiveContainer width="100%" height={140}>
-                                      <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                                          <XAxis dataKey="label" interval={2} tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
-                                          <YAxis 
-                                              dataKey="typeIdx" 
-                                              domain={[0.5, 2.5]} 
-                                              ticks={[1, 2]} 
-                                              tickFormatter={(val) => val === 1 ? 'Meetings' : 'Calls'}
-                                              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 'bold' }}
-                                              axisLine={false}
-                                              tickLine={false}
-                                          />
-                                          <ZAxis type="number" dataKey="count" range={[80, 81]} />
-                                          <Tooltip 
-                                              content={({ active, payload }: any) => {
-                                                  if (active && payload && payload.length) {
-                                                      const item = payload[0].payload;
-                                                      return (
-                                                          <div className="bg-slate-900 text-white text-xs p-2.5 rounded-lg shadow-xl">
-                                                              <p className="font-bold mb-1">{item.label}</p>
-                                                              <p className="text-slate-300">{item.type}: <strong className="text-white">{item.count}</strong> records</p>
-                                                          </div>
-                                                      );
-                                                  }
-                                                  return null;
-                                              }}
-                                          />
-                                          <Scatter 
-                                              data={data} 
-                                              shape={(props: any) => {
-                                                  const { cx, cy, payload } = props;
-                                                  const { count, type } = payload;
-                                                  let fill = isDark ? '#1e293b' : '#f1f5f9';
-                                                  if (count > 0) {
-                                                      fill = type === 'Calls' ? '#6366f1' : '#10b981';
-                                                  }
-                                                  return (
-                                                      <rect
-                                                          x={cx - 8}
-                                                          y={cy - 10}
-                                                          width={16}
-                                                          height={20}
-                                                          rx={3}
-                                                          fill={fill}
-                                                          fillOpacity={count === 0 ? 0.4 : count === 1 ? 0.4 : count === 2 ? 0.7 : 1}
-                                                          className="transition-transform hover:scale-110"
-                                                      />
-                                                  );
-                                              }}
-                                          />
-                                      </ScatterChart>
-                                  </ResponsiveContainer>
-                              </div>
-                          </div>
-                      </ChartWidget>
-                  );
-              }
+              return (
+                  <div key={widget.id} className={colSpanClass}>
+                      <ActivityIntensityHeatmap 
+                          calls={calls}
+                          meetings={meetings}
+                          leads={leads}
+                          isDark={isDark}
+                          onAddCall={onAddCall}
+                          onAddMeeting={onAddMeeting}
+                          onNavigate={onNavigate}
+                      />
+                  </div>
+              );
 
           default:
               return null;

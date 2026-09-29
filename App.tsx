@@ -34,7 +34,7 @@ import OfflineIndicator from './components/OfflineIndicator';
 import PlaceholderModule from './components/PlaceholderModule';
 import { Observability } from './components/Observability';
 import { MOCK_LEADS, MOCK_DEALS, MOCK_TASKS, MOCK_MEETINGS, MOCK_CONTACTS, MOCK_ACCOUNTS, MOCK_CALLS, MOCK_CAMPAIGNS, MOCK_DOCUMENTS, MOCK_VISITS, MOCK_PROJECTS, MOCK_TICKETS, MOCK_USERS } from './constants';
-import { IconMenu, IconLock, IconClock, IconX, IconArrowRight } from './components/Icons';
+import { IconMenu, IconLock, IconClock, IconX, IconArrowRight, IconSun, IconMoon, IconSparkles, IconCheck, IconPlus, IconChevronRight, IconSettings, IconZap } from './components/Icons';
 import { Lead, Deal, Activity, Task, Meeting, Contact, Account, Call, Campaign, Document, Visit, Project, Ticket, User, RoleDefinition, Permission } from './types';
 import Notifications from './components/Notifications';
 import { authService } from './services/authService';
@@ -42,15 +42,30 @@ import { saveStateToStorage, loadStateFromStorage, addToSyncQueue, syncDataWithB
 
 // Modern Hex Palette for Tailwind v4 compatibility
 const THEMES: Record<string, Record<number, string>> = {
-  indigo: { 50: '#f5f6ff', 100: '#ebedfe', 200: '#d7dbfe', 300: '#b9beff', 400: '#9398ff', 500: '#5145cd', 600: '#3e31ae', 700: '#32268f', 800: '#2a2075', 900: '#1f1857', 950: '#110c34' },
-  slate: { 50: '#fafafa', 100: '#f4f4f5', 200: '#e4e4e7', 300: '#d4d4d8', 400: '#a1a1aa', 500: '#52525b', 600: '#3f3f46', 700: '#27272a', 800: '#1b1b1f', 900: '#111113', 950: '#060608' },
-  emerald: { 50: '#f4fbf7', 100: '#e3f7ec', 200: '#c5ebd7', 300: '#94dbb6', 400: '#58c48e', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b', 950: '#022c22' },
-  purple: { 50: '#fafaff', 100: '#f3f0ff', 200: '#e7e2fe', 300: '#d1c7fe', 400: '#b1a0fd', 500: '#7c3aed', 600: '#6d28d9', 700: '#5b21b6', 800: '#4c1a96', 900: '#35106b', 950: '#1d053f' },
-  orange: { 50: '#fffbf7', 100: '#fff2e6', 200: '#ffe0cc', 300: '#ffc299', 400: '#ffa066', 500: '#f97316', 600: '#ea580c', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12', 950: '#431407' },
-  rose: { 50: '#fff8f8', 100: '#ffeff1', 200: '#ffdbe0', 300: '#ffb3bd', 400: '#ff8093', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337', 950: '#4c0519' },
-  cyan: { 50: '#f2fcfd', 100: '#e0f7fa', 200: '#bcebf0', 300: '#83dbe6', 400: '#42c3d4', 500: '#00a3c4', 600: '#0084a3', 700: '#006a85', 800: '#03556b', 900: '#054659', 950: '#012834' },
-  blue: { 50: '#f5f9ff', 100: '#ebf3ff', 200: '#d6e6ff', 300: '#b3d1ff', 400: '#85b3ff', 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#172554', 950: '#0c1530' },
+  indigo: { 50: '#f5f6ff', 100: '#ebedfe', 200: '#d7dbfe', 300: '#b9beff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81', 950: '#1e1b4b' },
+  slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a', 950: '#020617' },
+  emerald: { 50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 300: '#86efac', 400: '#4ade80', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b', 950: '#022c22' },
+  purple: { 50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff', 300: '#d8b4fe', 400: '#c084fc', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce', 800: '#6b21a8', 900: '#581c87', 950: '#3b0764' },
+  blue: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', 950: '#172554' },
+  rose: { 50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af', 400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337', 950: '#4c0519' },
+  amber: { 50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e', 900: '#78350f', 950: '#451a03' },
+  teal: { 50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a', 950: '#042f2e' },
+  cyan: { 50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63', 950: '#083344' },
+  orange: { 50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 300: '#fdba74', 400: '#fb923c', 500: '#f97316', 600: '#ea580c', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12', 950: '#431407' },
 };
+
+const PALETTE_OPTIONS = [
+  { id: 'indigo', name: 'Hyper Indigo', hex: '#6366f1' },
+  { id: 'slate', name: 'Obsidian Slate', hex: '#0f172a' },
+  { id: 'emerald', name: 'Emerald Pine', hex: '#10b981' },
+  { id: 'purple', name: 'Royal Amethyst', hex: '#a855f7' },
+  { id: 'blue', name: 'Cobalt Sapphire', hex: '#3b82f6' },
+  { id: 'rose', name: 'Crimson Ruby', hex: '#f43f5e' },
+  { id: 'amber', name: 'Sunrise Amber', hex: '#f59e0b' },
+  { id: 'teal', name: 'Nordic Teal', hex: '#14b8a6' },
+  { id: 'cyan', name: 'Quantum Cyan', hex: '#06b6d4' },
+  { id: 'orange', name: 'Sunset Copper', hex: '#f97316' },
+];
 
 // Initial RBAC Data
 const DEFAULT_ROLES: RoleDefinition[] = [
@@ -111,27 +126,91 @@ const VIEW_PERMISSIONS: Record<string, Permission> = {
   tenancy: 'manage_settings'
 };
 
+const VIEW_LABELS: Record<string, { title: string; category: string }> = {
+  dashboard: { title: 'Executive Command Center', category: 'Dashboard' },
+  leads: { title: 'Lead Intelligence & Pipeline', category: 'CRM' },
+  contacts: { title: 'Contact Directory', category: 'CRM' },
+  accounts: { title: 'Client Organizations', category: 'CRM' },
+  pipeline: { title: 'Opportunity Pipeline', category: 'Sales' },
+  tasks: { title: 'Task & Action Radar', category: 'Workspace' },
+  meetings: { title: 'Customer Meeting Schedule', category: 'Workspace' },
+  calls: { title: 'Outreach & Call Center', category: 'Workspace' },
+  campaigns: { title: 'Marketing Campaigns', category: 'Growth' },
+  documents: { title: 'Contracts & Proposals', category: 'Workspace' },
+  templates: { title: 'Document & Quote Templates', category: 'Workspace' },
+  visits: { title: 'Field Visit Logistics', category: 'Operations' },
+  projects: { title: 'Client Engagements', category: 'Operations' },
+  support: { title: 'Support & Resolution Hub', category: 'Operations' },
+  settings: { title: 'Workspace & Appearance Settings', category: 'System' },
+  reporting: { title: 'Executive BI & Analytics', category: 'Analytics' },
+  data_management: { title: 'Data Import & Exports', category: 'Enterprise' },
+  ai_governance: { title: 'AI Governance & Policy', category: 'Enterprise' },
+  iam: { title: 'Identity & Access Management', category: 'Enterprise' },
+  workflows: { title: 'Automation Workflows', category: 'Enterprise' },
+  communications: { title: 'Omnichannel Communication Hub', category: 'Enterprise' },
+  audit_logs: { title: 'Audit Trail & Compliance', category: 'Enterprise' },
+  tenancy: { title: 'Multi-Tenant Partitioning', category: 'Enterprise' },
+  api_management: { title: 'API Gateway & Webhooks', category: 'Enterprise' },
+  observability: { title: 'System Telemetry & Health', category: 'Enterprise' },
+  'document-editor': { title: 'Document Studio', category: 'Workspace' }
+};
+
 function MainApp() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [previousView, setPreviousView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('nova_theme_dark');
+    return saved !== null ? saved === 'true' : false;
+  });
+  
+  // Quick Palette Switcher dropdown state
+  const [isPalettePickerOpen, setIsPalettePickerOpen] = useState(false);
+  const palettePickerRef = useRef<HTMLDivElement>(null);
   
   // Offline & Sync State
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingChanges, setPendingChanges] = useState(0);
 
-  // Theme Settings
-  const [primaryColor, setPrimaryColor] = useState('indigo');
-  const [fontFamily, setFontFamily] = useState('Inter');
-  const [density, setDensity] = useState('Medium');
+  // Theme Settings with localStorage Memory
+  const [primaryColor, setPrimaryColor] = useState(() => localStorage.getItem('nova_theme_color') || 'indigo');
+  const [fontFamily, setFontFamily] = useState(() => localStorage.getItem('nova_theme_font') || 'Plus Jakarta');
+  const [density, setDensity] = useState(() => localStorage.getItem('nova_theme_density') || 'Medium');
   const [weekStart, setWeekStart] = useState('Sunday');
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY');
   const [timeZone, setTimeZone] = useState('UTC');
   const [timeFormat, setTimeFormat] = useState<'12h' | '24h'>('12h');
   const [workingDays, setWorkingDays] = useState<string[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
   const [fiscalYearStart, setFiscalYearStart] = useState('January');
+
+  // Close palette dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (palettePickerRef.current && !palettePickerRef.current.contains(e.target as Node)) {
+        setIsPalettePickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  // Persist Theme settings
+  useEffect(() => {
+    localStorage.setItem('nova_theme_color', primaryColor);
+  }, [primaryColor]);
+
+  useEffect(() => {
+    localStorage.setItem('nova_theme_font', fontFamily);
+  }, [fontFamily]);
+
+  useEffect(() => {
+    localStorage.setItem('nova_theme_density', density);
+  }, [density]);
+
+  useEffect(() => {
+    localStorage.setItem('nova_theme_dark', String(isDark));
+  }, [isDark]);
 
   // Finance Settings
   const [defaultPaymentTerm, setDefaultPaymentTerm] = useState('Net 30');
@@ -948,21 +1027,118 @@ function MainApp() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
         {currentView !== 'document-editor' && (
-            <header className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-sm border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300 z-20 sticky top-0">
-               <div className="flex items-center gap-4 flex-1">
-                 <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 dark:hover:text-white">
-                    <IconMenu className="w-6 h-6" />
+            <header className="flex items-center justify-between px-4 md:px-8 py-3 md:py-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-xs border-b border-slate-200/70 dark:border-slate-800/80 transition-colors duration-300 z-20 sticky top-0">
+               {/* Left: Mobile Toggle & Breadcrumb */}
+               <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                 <button 
+                   onClick={() => setSidebarOpen(true)} 
+                   className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                   aria-label="Open Navigation Menu"
+                 >
+                    <IconMenu className="w-5 h-5" />
                  </button>
-                 <span className="md:hidden font-bold text-slate-900 dark:text-white mr-4">NovaCRM</span>
+
+                 {/* Breadcrumbs */}
+                 <div className="flex items-center gap-2 min-w-0">
+                   <span className="hidden sm:inline-block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 shrink-0">
+                     {VIEW_LABELS[currentView]?.category || 'Workspace'}
+                   </span>
+                   <span className="hidden sm:inline-block text-slate-300 dark:text-slate-700 text-xs">/</span>
+                   <h1 className="text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                     {VIEW_LABELS[currentView]?.title || 'Command Center'}
+                   </h1>
+                 </div>
                </div>
                
-               <div className="flex items-center gap-4">
+               {/* Right: Quick Theme Controls, Status & Notifications */}
+               <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                 
+                 {/* Live Realtime Indicator */}
+                 <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/50 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                   <span>Synced</span>
+                 </div>
+
+                 {/* Quick Palette Picker */}
+                 <div className="relative" ref={palettePickerRef}>
+                   <button
+                     onClick={() => setIsPalettePickerOpen(!isPalettePickerOpen)}
+                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs transition-all"
+                     title="Change Theme Color Palette"
+                   >
+                     <span 
+                       className="w-3.5 h-3.5 rounded-full shadow-xs ring-1 ring-white/20 shrink-0" 
+                       style={{ backgroundColor: THEMES[primaryColor]?.[500] || '#6366f1' }}
+                     />
+                     <span className="hidden sm:inline text-[11px] font-bold capitalize">
+                       {primaryColor}
+                     </span>
+                   </button>
+
+                   {/* Palette Popover Dropdown */}
+                   {isPalettePickerOpen && (
+                     <div className="absolute right-0 mt-2 w-56 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 animate-scale-in">
+                       <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white">
+                         <span className="flex items-center gap-1.5">
+                           <IconSparkles className="w-3.5 h-3.5 text-primary-500" />
+                           Color Palettes
+                         </span>
+                         <button 
+                           onClick={() => { setCurrentView('settings'); setIsPalettePickerOpen(false); }}
+                           className="text-[10px] text-primary-600 dark:text-primary-400 hover:underline font-normal"
+                         >
+                           All themes →
+                         </button>
+                       </div>
+                       
+                       <div className="grid grid-cols-2 gap-1.5">
+                         {PALETTE_OPTIONS.map((pal) => (
+                           <button
+                             key={pal.id}
+                             onClick={() => {
+                               setPrimaryColor(pal.id);
+                               setIsPalettePickerOpen(false);
+                             }}
+                             className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium transition-all text-left ${
+                               primaryColor === pal.id 
+                                 ? 'bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 font-bold ring-1 ring-primary-500/30' 
+                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                             }`}
+                           >
+                             <span 
+                               className="w-3 h-3 rounded-full shrink-0 shadow-2xs" 
+                               style={{ backgroundColor: pal.hex }} 
+                             />
+                             <span className="truncate text-[11px]">{pal.name.split(' ')[0]}</span>
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                 </div>
+
+                 {/* Dark / Light Mode Toggle Button */}
+                 <button
+                   onClick={toggleTheme}
+                   className="p-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-2xs transition-all"
+                   title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                   aria-label="Toggle Theme"
+                 >
+                   {isDark ? (
+                     <IconSun className="w-4 h-4 text-amber-400 transition-transform duration-300 hover:rotate-45" />
+                   ) : (
+                     <IconMoon className="w-4 h-4 text-slate-600 transition-transform duration-300 hover:-rotate-12" />
+                   )}
+                 </button>
+
+                 {/* Notifications Hub */}
                  <Notifications 
                    tasks={tasks} 
                    leads={leads}
                    onNavigateToTasks={handleNavigateToTasks} 
                    onNavigateToLeads={handleNavigateToLeads}
                  />
+
                </div>
             </header>
         )}

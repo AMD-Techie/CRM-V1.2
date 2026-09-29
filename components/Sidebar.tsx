@@ -238,14 +238,23 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, isDark,
             </div>
           </div>
 
-          {/* Logout Button - Absolute positioned when expanded to stay on right */}
-          <button 
-            onClick={(e) => { e.stopPropagation(); onLogout(); }}
-            className={`text-slate-500 hover:text-red-500 transition-all p-1.5 hover:bg-slate-700 rounded-lg flex-shrink-0 ${isCollapsed ? 'absolute inset-0 w-full h-full opacity-0 hover:opacity-100 bg-black/60 flex items-center justify-center' : 'ml-auto'}`}
-            title="Sign Out"
-          >
-            <IconLogOut className="w-4 h-4" />
-          </button>
+          {/* Action Buttons: Quick Theme Toggle & Logout */}
+          <div className={`flex items-center gap-1 shrink-0 ${isCollapsed ? 'hidden' : 'ml-auto'}`}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
+              className="text-slate-500 hover:text-white transition-all p-1.5 hover:bg-slate-800 rounded-lg"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? <IconSun className="w-4 h-4 text-amber-400" /> : <IconMoon className="w-4 h-4 text-slate-400" />}
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); onLogout(); }}
+              className="text-slate-500 hover:text-red-400 transition-all p-1.5 hover:bg-slate-800 rounded-lg"
+              title="Sign Out"
+            >
+              <IconLogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

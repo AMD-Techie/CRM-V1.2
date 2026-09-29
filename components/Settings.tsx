@@ -392,24 +392,27 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Colors Config - Synced with App.tsx Themes
   const COLORS = [
-      { id: 'indigo', name: 'Default Indigo', hex: '#6366f1' },
-      { id: 'slate', name: 'Midnight Blue', hex: '#0f172a' },
-      { id: 'emerald', name: 'Emerald City', hex: '#10b981' },
-      { id: 'purple', name: 'Royal Purple', hex: '#8b5cf6' }, // Changed to match Violet/Purple in App.tsx
-      { id: 'orange', name: 'Sunset Orange', hex: '#f97316' },
-      { id: 'rose', name: 'Ruby Red', hex: '#f43f5e' },
-      { id: 'cyan', name: 'Ocean Cyan', hex: '#06b6d4' },
-      { id: 'blue', name: 'Azure Blue', hex: '#3b82f6' }, 
+      { id: 'indigo', name: 'Hyper Indigo', hex: '#6366f1', desc: 'Modern flagship SaaS electric indigo' },
+      { id: 'slate', name: 'Obsidian Slate', hex: '#0f172a', desc: 'Executive minimalist titanium & monochrome' },
+      { id: 'emerald', name: 'Emerald Pine', hex: '#10b981', desc: 'Fintech & wealth management emerald' },
+      { id: 'purple', name: 'Royal Amethyst', hex: '#a855f7', desc: 'AI-forward cosmic violet & lilac' },
+      { id: 'blue', name: 'Cobalt Sapphire', hex: '#3b82f6', desc: 'Enterprise security & azure blue' },
+      { id: 'rose', name: 'Crimson Ruby', hex: '#f43f5e', desc: 'High-impact ruby rose & blush' },
+      { id: 'amber', name: 'Sunrise Amber', hex: '#f59e0b', desc: 'Warm copper & solar gold' },
+      { id: 'teal', name: 'Nordic Teal', hex: '#14b8a6', desc: 'Scandinavian pine & deep jade' },
+      { id: 'cyan', name: 'Quantum Cyan', hex: '#06b6d4', desc: 'Cloud infrastructure & electric sea' },
+      { id: 'orange', name: 'Sunset Copper', hex: '#f97316', desc: 'Vibrant terracotta & sunset orange' },
   ];
 
   // Fonts Config
   const FONTS = [
-      { id: 'Plus Jakarta', name: 'Plus Jakarta', description: 'Modern Geometric', family: "'Plus Jakarta Sans', sans-serif" },
-      { id: 'Inter UI', name: 'Inter UI', description: 'Neo-Grotesque', family: "'Inter', sans-serif" },
-      { id: 'Montserrat', name: 'Montserrat', description: 'Urban Classic', family: "'Montserrat', sans-serif" },
-      { id: 'Outfit', name: 'Outfit', description: 'Modern Geometric', family: "'Outfit', sans-serif" },
-      { id: 'Lexend', name: 'Lexend', description: 'Readability Focused', family: "'Lexend', sans-serif" },
-      { id: 'Playfair Display', name: 'Playfair Display', description: 'Elegance Serif', family: "'Playfair Display', serif" },
+      { id: 'Plus Jakarta', name: 'Plus Jakarta Sans', description: 'Executive Modern SaaS · High Clarity', family: "'Plus Jakarta Sans', sans-serif" },
+      { id: 'Inter', name: 'Inter UI', description: 'Precision Engineering & Data Tables', family: "'Inter', sans-serif" },
+      { id: 'Outfit', name: 'Outfit Geometric', description: 'Contemporary Futuristic & Clean Curves', family: "'Outfit', sans-serif" },
+      { id: 'Lexend', name: 'Lexend Readability', description: 'Cognitive Optimization & High Legibility', family: "'Lexend', sans-serif" },
+      { id: 'JetBrains Mono', name: 'JetBrains Mono', description: 'Technical Console & Tabular Figures', family: "'JetBrains Mono', monospace" },
+      { id: 'Montserrat', name: 'Montserrat Classic', description: 'Bold Brand Architecture', family: "'Montserrat', sans-serif" },
+      { id: 'Playfair Display', name: 'Playfair Display', description: 'Editorial Luxury & Private Advisory', family: "'Playfair Display', serif" },
   ];
 
   useEffect(() => {
@@ -716,100 +719,212 @@ const Settings: React.FC<SettingsProps> = ({
       case 'theme':
         return (
             <div className="max-w-5xl space-y-12 animate-fade-in pb-10">
+                {/* 1. Accent Palette Configuration */}
                 <div>
-                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Accent Configuration</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {COLORS.map(color => (
-                            <button
-                                key={color.id}
-                                onClick={() => setPrimaryColor(color.id)}
-                                className={`group relative flex flex-col items-center p-6 rounded-[2rem] transition-all duration-300 ${
-                                    primaryColor === color.id 
-                                    ? 'bg-white dark:bg-slate-800 ring-2 ring-primary-500 shadow-xl scale-[1.02] z-10' 
-                                    : 'bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:shadow-lg hover:-translate-y-1'
-                                }`}
-                            >
-                                <div 
-                                    className={`w-20 h-20 rounded-3xl shadow-md mb-4 transition-transform duration-300 ${primaryColor === color.id ? 'scale-110' : 'group-hover:scale-110'}`}
-                                    style={{ backgroundColor: color.hex }}
-                                ></div>
-                                <span className={`text-[10px] font-bold uppercase tracking-widest ${primaryColor === color.id ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                                    {color.name}
-                                </span>
-                            </button>
-                        ))}
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Enterprise Color Palette</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Select the primary brand identity and UI accent scheme applied across the workspace.</p>
+                        </div>
+                        <span className="px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 font-bold text-xs capitalize">
+                          Active: {primaryColor}
+                        </span>
                     </div>
-                </div>
-                <div>
-                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Typography Core</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {FONTS.map(font => (
-                            <button
-                                key={font.id}
-                                onClick={() => setFontFamily(font.id)}
-                                className={`group relative flex flex-col items-start p-8 rounded-[2rem] transition-all duration-300 text-left overflow-hidden min-h-[180px] ${
-                                    fontFamily === font.id
-                                    ? 'bg-white dark:bg-slate-800 ring-2 ring-primary-500 shadow-xl scale-[1.02] z-10' 
-                                    : 'bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1'
-                                }`}
-                            >
-                                <div className={`relative z-10 w-full flex flex-col h-full justify-center`}>
-                                    <h4 className={`text-3xl font-bold mb-3 ${fontFamily === font.id ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`} style={{ fontFamily: font.family }}>
-                                        {font.name}
-                                    </h4>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{font.description}</p>
-                                </div>
-                                {fontFamily === font.id && (
-                                    <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-primary-500/10 rounded-full blur-2xl"></div>
-                                )}
-                            </button>
-                        ))}
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                        {COLORS.map(color => {
+                            const isSelected = primaryColor === color.id;
+                            return (
+                                <button
+                                    key={color.id}
+                                    onClick={() => setPrimaryColor(color.id)}
+                                    className={`group relative flex flex-col items-start p-4 rounded-2xl transition-all duration-200 text-left border ${
+                                        isSelected 
+                                        ? 'bg-white dark:bg-slate-800/90 ring-2 ring-primary-500 border-primary-500/50 shadow-md scale-[1.02] z-10' 
+                                        : 'bg-white dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:shadow-xs'
+                                    }`}
+                                >
+                                    <div className="w-full flex items-center justify-between mb-3">
+                                        <div 
+                                            className={`w-9 h-9 rounded-xl shadow-xs ring-2 ring-white/10 flex items-center justify-center transition-transform group-hover:scale-110`}
+                                            style={{ backgroundColor: color.hex }}
+                                        >
+                                            {isSelected && (
+                                                <IconCheckCircle className="w-5 h-5 text-white drop-shadow-md" />
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] font-mono text-slate-400 font-semibold">{color.hex}</span>
+                                    </div>
+                                    <span className={`text-xs font-bold ${isSelected ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+                                        {color.name}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 leading-tight line-clamp-2">
+                                        {color.desc}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
+                {/* 2. Interactive Theme Live Sandbox Preview */}
+                <div className="p-6 rounded-3xl bg-slate-50/80 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                    <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200/60 dark:border-slate-800">
+                        <div className="flex items-center gap-2">
+                            <IconSparkles className="w-4 h-4 text-primary-500" />
+                            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+                                Live Component Sandbox & Theme Preview
+                            </h4>
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-mono">
+                            Rendered using --theme-primary tokens
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        {/* Sample Card A: Action Buttons */}
+                        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 space-y-3">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Button Hierarchy</span>
+                            <div className="flex flex-col gap-2">
+                                <button className="w-full px-4 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-500 rounded-xl shadow-xs transition-colors">
+                                    Primary Brand CTA
+                                </button>
+                                <button className="w-full px-4 py-2 text-xs font-bold text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/50 hover:bg-primary-100 rounded-xl transition-colors">
+                                    Subtle Tint Button
+                                </button>
+                                <button className="w-full px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors">
+                                    Outline Neutral Button
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Sample Card B: Metric KPI & Runway */}
+                        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 space-y-3">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pipeline Trajectory</span>
+                            <div>
+                                <div className="flex items-baseline justify-between">
+                                    <span className="text-2xl font-black text-slate-900 dark:text-white font-mono tabular-nums">$1,850,000</span>
+                                    <span className="text-xs font-bold text-primary-600 dark:text-primary-400">+24.5%</span>
+                                </div>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400">Quarterly closed revenue attainment</span>
+                            </div>
+                            <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700/60 overflow-hidden">
+                                <div className="h-full bg-primary-600 rounded-full" style={{ width: '74%' }}></div>
+                            </div>
+                        </div>
+
+                        {/* Sample Card C: Typography Specimen */}
+                        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 space-y-2">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Type Scale ({fontFamily})</span>
+                            <h5 className="text-base font-extrabold text-slate-900 dark:text-white">
+                                Modern Revenue Intelligence
+                            </h5>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Experience precision data legibility with calibrated line heights and tabular figures.
+                            </p>
+                            <div className="flex items-center gap-1.5 pt-1">
+                                <span className="px-2 py-0.5 rounded-md bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-300 font-bold text-[10px]">
+                                    Live Specimen
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Typography Core Selection */}
                 <div>
-                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Application Density</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {['Small', 'Medium', 'Large', 'XL'].map((size) => (
-                            <button
-                                key={size}
-                                onClick={() => setDensity(size)}
-                                className={`group relative flex flex-col items-center justify-center p-6 rounded-[2rem] transition-all duration-200 h-40 ${
-                                    density === size
-                                    ? 'bg-white dark:bg-slate-800 ring-2 ring-slate-900 dark:ring-white shadow-xl scale-[1.02] z-10' 
-                                    : 'bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:shadow-lg hover:-translate-y-1'
-                                }`}
-                            >
-                                <div className="flex-1 flex items-center justify-center">
-                                    <span className={`font-bold text-slate-900 dark:text-white ${
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Typography Engine</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {FONTS.map(font => {
+                            const isSelected = fontFamily === font.id;
+                            return (
+                                <button
+                                    key={font.id}
+                                    onClick={() => setFontFamily(font.id)}
+                                    className={`group relative flex flex-col items-start p-5 rounded-2xl transition-all duration-200 text-left border ${
+                                        isSelected
+                                        ? 'bg-white dark:bg-slate-800 ring-2 ring-primary-500 border-primary-500/50 shadow-md scale-[1.01] z-10' 
+                                        : 'bg-white dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800 hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700'
+                                    }`}
+                                >
+                                    <div className="w-full flex items-center justify-between mb-2">
+                                        <h4 className={`text-xl font-extrabold ${isSelected ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-white'}`} style={{ fontFamily: font.family }}>
+                                            {font.name.split(' ')[0]}
+                                        </h4>
+                                        {isSelected && (
+                                            <span className="w-2 h-2 rounded-full bg-primary-500"></span>
+                                        )}
+                                    </div>
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mb-3">{font.description}</p>
+                                    <div className="w-full pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-600 dark:text-slate-300 font-normal" style={{ fontFamily: font.family }}>
+                                        The quick brown fox jumps over $1,250,000 ARR
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* 4. Application Density */}
+                <div>
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Interface Density & Scale</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {['Small', 'Medium', 'Large', 'XL'].map((size) => {
+                            const isSelected = density === size;
+                            return (
+                                <button
+                                    key={size}
+                                    onClick={() => setDensity(size)}
+                                    className={`group relative flex flex-col items-center justify-center p-5 rounded-2xl transition-all duration-200 border ${
+                                        isSelected
+                                        ? 'bg-white dark:bg-slate-800 ring-2 ring-primary-500 border-primary-500/50 shadow-md scale-[1.02] z-10' 
+                                        : 'bg-white dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:shadow-xs'
+                                    }`}
+                                >
+                                    <span className={`font-black text-slate-900 dark:text-white mb-2 ${
                                         size === 'Small' ? 'text-lg' : 
                                         size === 'Medium' ? 'text-2xl' : 
                                         size === 'Large' ? 'text-3xl' : 'text-4xl'
                                     }`}>
                                         Aa
                                     </span>
-                                </div>
-                                <span className={`text-[10px] font-bold uppercase tracking-widest mt-4 ${density === size ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
-                                    {size}
-                                </span>
-                            </button>
-                        ))}
+                                    <span className={`text-[11px] font-extrabold uppercase tracking-wider ${isSelected ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        {size} ({size === 'Small' ? '14px' : size === 'Medium' ? '16px' : size === 'Large' ? '17px' : '18px'})
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
-                <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                {/* 5. Interface Mode (Light vs Dark) */}
+                <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">Interface Mode</h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Switch between light and dark aesthetics.</p>
+                        <h4 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wide">Interface Mode</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Toggle between crisp 60-30-10 light mode and high-contrast OLED dark mode.</p>
                     </div>
-                    <button 
-                        onClick={toggleTheme}
-                        className={`w-16 h-8 rounded-full p-1 transition-colors duration-300 ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`}
-                    >
-                        <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${isDark ? 'translate-x-8' : 'translate-x-0'}`}>
-                            {isDark ? <IconMoon className="w-3 h-3 text-slate-800" /> : <IconSun className="w-3 h-3 text-yellow-500" />}
-                        </div>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => !isDark || toggleTheme()}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                                !isDark 
+                                ? 'bg-white text-slate-900 shadow-sm border-slate-300' 
+                                : 'bg-transparent text-slate-400 border-transparent hover:text-slate-200'
+                            }`}
+                        >
+                            <IconSun className="w-3.5 h-3.5 text-yellow-500" /> Light Mode
+                        </button>
+                        <button
+                            onClick={() => isDark || toggleTheme()}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                                isDark 
+                                ? 'bg-slate-800 text-white shadow-sm border-slate-700' 
+                                : 'bg-transparent text-slate-600 border-transparent hover:text-slate-900'
+                            }`}
+                        >
+                            <IconMoon className="w-3.5 h-3.5 text-indigo-400" /> Dark Mode
+                        </button>
+                    </div>
                 </div>
             </div>
         );
