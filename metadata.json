@@ -1,0 +1,6 @@
+{
+  "name": "NovaCRM",
+  "description": "AI-Powered Universal CRM Platform featuring intelligent lead scoring, pipeline management, and a generative AI assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
