@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Leads from './components/Leads';
@@ -26,6 +27,40 @@ import DataManagement from './components/DataManagement';
 import TenantManagement from './components/TenantManagement';
 import AIGovernance from './components/AIGovernance';
 import APIGateway from './components/APIGateway';
+
+import { AICommandCenter } from './features/ai-workspace/command-center/AICommandCenter';
+import { AgentManagement } from './features/ai-workspace/agents/AgentManagement';
+import { AgentRunsView } from './features/ai-workspace/agent-runs/AgentRunsView';
+import { WorkflowsView } from './features/ai-workspace/workflows/WorkflowsView';
+import { SkillsView } from './features/ai-workspace/skills/SkillsView';
+import { SkillEvaluationsView } from './features/ai-workspace/evaluations/SkillEvaluationsView';
+import { CapabilitiesMatrixView } from './features/ai-workspace/capabilities/CapabilitiesMatrixView';
+import { AIActionsView } from './features/ai-workspace/actions/AIActionsView';
+import { AIApprovalsView } from './features/ai-workspace/approvals/AIApprovalsView';
+import { AIInsightsView } from './features/ai-workspace/insights/AIInsightsView';
+import { AICopilotDock } from './features/ai-workspace/copilot/AICopilotDock';
+import { KnowledgeBaseView } from './features/knowledge/KnowledgeBaseView';
+
+import { 
+  useLeadsQuery, 
+  useCreateLeadMutation, 
+  useUpdateLeadMutation, 
+  useDeleteLeadMutation,
+  useDealsQuery, 
+  useCreateDealMutation, 
+  useUpdateDealMutation,
+  useContactsQuery, 
+  useCreateContactMutation, 
+  useUpdateContactMutation,
+  useAccountsQuery, 
+  useCreateAccountMutation,
+  useTasksQuery, 
+  useCreateTaskMutation, 
+  useUpdateTaskMutation, 
+  useDeleteTaskMutation,
+  useMeetingsQuery, 
+  useCallsQuery
+} from './hooks';
 
 import { CollaborationProvider, useCollaboration } from './components/CollaborationProvider';
 import AIChat from './components/AIChat';
@@ -123,7 +158,14 @@ const VIEW_PERMISSIONS: Record<string, Permission> = {
   audit_logs: 'manage_settings',
   api_management: 'manage_settings',
   observability: 'manage_settings',
-  tenancy: 'manage_settings'
+  tenancy: 'manage_settings',
+  ai_command_center: 'use_ai_features',
+  ai_agents: 'use_ai_features',
+  ai_agent_runs: 'use_ai_features',
+  ai_actions: 'use_ai_features',
+  ai_approvals: 'use_ai_features',
+  ai_insights: 'use_ai_features',
+  knowledge_base: 'view_leads'
 };
 
 const VIEW_LABELS: Record<string, { title: string; category: string }> = {
@@ -152,12 +194,20 @@ const VIEW_LABELS: Record<string, { title: string; category: string }> = {
   tenancy: { title: 'Multi-Tenant Partitioning', category: 'Enterprise' },
   api_management: { title: 'API Gateway & Webhooks', category: 'Enterprise' },
   observability: { title: 'System Telemetry & Health', category: 'Enterprise' },
-  'document-editor': { title: 'Document Studio', category: 'Workspace' }
+  'document-editor': { title: 'Document Studio', category: 'Workspace' },
+  ai_command_center: { title: 'AI Command Center', category: 'AI Workspace' },
+  ai_agents: { title: 'AI Agents Fleet', category: 'AI Workspace' },
+  ai_agent_runs: { title: 'Agent Execution Runs', category: 'AI Workspace' },
+  ai_actions: { title: 'AI Operations & Action Queue', category: 'AI Workspace' },
+  ai_approvals: { title: 'AI Approval Center', category: 'AI Workspace' },
+  ai_insights: { title: 'AI Insights & Revenue Signals', category: 'AI Workspace' },
+  knowledge_base: { title: 'Knowledge Base & Playbooks', category: 'Knowledge' }
 };
 
 function MainApp() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [previousView, setPreviousView] = useState('dashboard');
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('nova_theme_dark');
@@ -226,14 +276,59 @@ function MainApp() {
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
   const [currentUser, setCurrentUser] = useState<User>(MOCK_USERS[0]);
 
-  // State for data (Initialized synchronously with self-healing offline loader to ensure instant dashboard paints)
-  const [leads, setLeads] = useState<Lead[]>(() => loadStateFromStorage('leads', MOCK_LEADS));
-  const [deals, setDeals] = useState<Deal[]>(() => loadStateFromStorage('deals', MOCK_DEALS));
-  const [tasks, setTasks] = useState<Task[]>(() => loadStateFromStorage('tasks', MOCK_TASKS));
-  const [meetings, setMeetings] = useState<Meeting[]>(() => loadStateFromStorage('meetings', MOCK_MEETINGS));
-  const [contacts, setContacts] = useState<Contact[]>(() => loadStateFromStorage('contacts', MOCK_CONTACTS));
-  const [accounts, setAccounts] = useState<Account[]>(() => loadStateFromStorage('accounts', MOCK_ACCOUNTS));
-  const [calls, setCalls] = useState<Call[]>(() => loadStateFromStorage('calls', MOCK_CALLS));
+  // CRM Entity Collections sourced from TanStack Query (Single Source of Server State Truth)
+  const { data: leads = [] } = useLeadsQuery();
+  const { data: deals = [] } = useDealsQuery();
+  const { data: tasks = [] } = useTasksQuery();
+  const { data: meetings = [] } = useMeetingsQuery();
+  const { data: contacts = [] } = useContactsQuery();
+  const { data: accounts = [] } = useAccountsQuery();
+  const { data: calls = [] } = useCallsQuery();
+
+  const createLeadMutation = useCreateLeadMutation();
+  const updateLeadMutation = useUpdateLeadMutation();
+  const deleteLeadMutation = useDeleteLeadMutation();
+  const createDealMutation = useCreateDealMutation();
+  const updateDealMutation = useUpdateDealMutation();
+  const createContactMutation = useCreateContactMutation();
+  const updateContactMutation = useUpdateContactMutation();
+  const createAccountMutation = useCreateAccountMutation();
+  const createTaskMutation = useCreateTaskMutation();
+  const updateTaskMutation = useUpdateTaskMutation();
+  const deleteTaskMutation = useDeleteTaskMutation();
+
+  const queryClient = useQueryClient();
+
+  const handleBulkSetLeads = (val: React.SetStateAction<Lead[]>) => {
+    const nextVal = typeof val === 'function' ? val(leads) : val;
+    saveStateToStorage('leads', nextVal);
+    queryClient.invalidateQueries({ queryKey: ['leads'] });
+  };
+
+  const handleBulkSetDeals = (val: React.SetStateAction<Deal[]>) => {
+    const nextVal = typeof val === 'function' ? val(deals) : val;
+    saveStateToStorage('deals', nextVal);
+    queryClient.invalidateQueries({ queryKey: ['deals'] });
+  };
+
+  const handleBulkSetContacts = (val: React.SetStateAction<Contact[]>) => {
+    const nextVal = typeof val === 'function' ? val(contacts) : val;
+    saveStateToStorage('contacts', nextVal);
+    queryClient.invalidateQueries({ queryKey: ['contacts'] });
+  };
+
+  const handleBulkSetAccounts = (val: React.SetStateAction<Account[]>) => {
+    const nextVal = typeof val === 'function' ? val(accounts) : val;
+    saveStateToStorage('accounts', nextVal);
+    queryClient.invalidateQueries({ queryKey: ['accounts'] });
+  };
+
+  const handleBulkSetTasks = (val: React.SetStateAction<Task[]>) => {
+    const nextVal = typeof val === 'function' ? val(tasks) : val;
+    saveStateToStorage('tasks', nextVal);
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+  };
+
   const [campaigns, setCampaigns] = useState<Campaign[]>(() => loadStateFromStorage('campaigns', MOCK_CAMPAIGNS));
   const [documents, setDocuments] = useState<Document[]>(() => loadStateFromStorage('documents', MOCK_DOCUMENTS));
   const [visits, setVisits] = useState<Visit[]>(() => loadStateFromStorage('visits', MOCK_VISITS));
@@ -250,10 +345,10 @@ function MainApp() {
     stage: string;
     days: number;
   }
-  const [workflowAlerts, setWorkflowAlerts] = useState<WorkflowAlert[]>([]);
+  const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
+  const workflowAlerts = useMemo(() => {
+    if (!isAuthenticated) return [];
     const alertList: WorkflowAlert[] = [];
     const today = new Date();
     leads.forEach(lead => {
@@ -272,9 +367,8 @@ function MainApp() {
         });
       }
     });
-    // Dynamically flag the top 3 stagnant leads for prompt in-app alerting
-    setWorkflowAlerts(alertList.slice(0, 3));
-  }, [leads, isAuthenticated]);
+    return alertList.filter(a => !dismissedAlertIds.includes(a.id)).slice(0, 3);
+  }, [leads, isAuthenticated, dismissedAlertIds]);
 
   const handleNavigateToLeads = (leadId: string) => {
     setActiveLeadId(leadId);
@@ -327,18 +421,18 @@ function MainApp() {
 
   // --- State Persistence Effects ---
   // Save state to local storage whenever it changes to support "offline local memory"
-  useEffect(() => { saveStateToStorage('leads', leads); }, [leads]);
-  useEffect(() => { saveStateToStorage('deals', deals); }, [deals]);
-  useEffect(() => { saveStateToStorage('tasks', tasks); }, [tasks]);
-  useEffect(() => { saveStateToStorage('meetings', meetings); }, [meetings]);
-  useEffect(() => { saveStateToStorage('contacts', contacts); }, [contacts]);
-  useEffect(() => { saveStateToStorage('accounts', accounts); }, [accounts]);
-  useEffect(() => { saveStateToStorage('calls', calls); }, [calls]);
-  useEffect(() => { saveStateToStorage('campaigns', campaigns); }, [campaigns]);
-  useEffect(() => { saveStateToStorage('documents', documents); }, [documents]);
-  useEffect(() => { saveStateToStorage('visits', visits); }, [visits]);
-  useEffect(() => { saveStateToStorage('projects', projects); }, [projects]);
-  useEffect(() => { saveStateToStorage('tickets', tickets); }, [tickets]);
+  useEffect(() => { if (leads?.length) saveStateToStorage('leads', leads); }, [leads]);
+  useEffect(() => { if (deals?.length) saveStateToStorage('deals', deals); }, [deals]);
+  useEffect(() => { if (tasks?.length) saveStateToStorage('tasks', tasks); }, [tasks]);
+  useEffect(() => { if (meetings?.length) saveStateToStorage('meetings', meetings); }, [meetings]);
+  useEffect(() => { if (contacts?.length) saveStateToStorage('contacts', contacts); }, [contacts]);
+  useEffect(() => { if (accounts?.length) saveStateToStorage('accounts', accounts); }, [accounts]);
+  useEffect(() => { if (calls?.length) saveStateToStorage('calls', calls); }, [calls]);
+  useEffect(() => { if (campaigns?.length) saveStateToStorage('campaigns', campaigns); }, [campaigns]);
+  useEffect(() => { if (documents?.length) saveStateToStorage('documents', documents); }, [documents]);
+  useEffect(() => { if (visits?.length) saveStateToStorage('visits', visits); }, [visits]);
+  useEffect(() => { if (projects?.length) saveStateToStorage('projects', projects); }, [projects]);
+  useEffect(() => { if (tickets?.length) saveStateToStorage('tickets', tickets); }, [tickets]);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -429,78 +523,59 @@ function MainApp() {
 
   const toggleTheme = () => setIsDark(!isDark);
   
-  // Data Handlers with Offline Support
+  // Data Handlers with Unified TanStack Query + Offline Sync Support
   const handleAddLead = (newLeadData: Omit<Lead, 'id'>) => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const leadToAdd: Lead = {
+    const leadToAdd = {
       ...newLeadData,
-      id: `L${Date.now()}`,
-      score: 50,
-      scoreBreakdown: { fit: 50, engagement: 50, budget: 50 },
-      notes: 'Newly created lead.',
+      score: newLeadData.score || 50,
+      scoreBreakdown: newLeadData.scoreBreakdown || { fit: 50, engagement: 50, budget: 50 },
+      notes: newLeadData.notes || 'Newly created lead.',
       lastContact: todayStr,
       name: `${newLeadData.firstName || ''} ${newLeadData.lastName || ''}`.trim(),
       owner: currentUser.name,
       creationDate: newLeadData.creationDate || todayStr,
       statusUpdatedAt: todayStr,
     };
-    setLeads(prevLeads => [leadToAdd, ...prevLeads]);
+    createLeadMutation.mutate(leadToAdd);
     if (!navigator.onLine) {
-      const count = addToSyncQueue('ADD_LEAD', leadToAdd);
+      const count = addToSyncQueue('ADD_LEAD', leadToAdd as Lead);
       setPendingChanges(count);
     }
   };
 
   const handleUpdateLead = (updatedLead: Lead) => {
-    setLeads(prevLeads => prevLeads.map(lead => {
-      if (lead.id === updatedLead.id) {
-        const statusChanged = lead.status !== updatedLead.status;
-        const statusUpdatedAt = statusChanged 
-          ? new Date().toISOString().split('T')[0] 
-          : (lead.statusUpdatedAt || lead.creationDate || new Date().toISOString().split('T')[0]);
-        return { 
-          ...lead, 
-          ...updatedLead, 
-          name: `${updatedLead.firstName || ''} ${updatedLead.lastName || ''}`.trim(),
-          statusUpdatedAt
-        };
-      }
-      return lead;
-    }));
+    const oldLead = leads.find(l => l.id === updatedLead.id);
+    const statusChanged = oldLead ? oldLead.status !== updatedLead.status : false;
+    const statusUpdatedAt = statusChanged 
+      ? new Date().toISOString().split('T')[0] 
+      : (updatedLead.statusUpdatedAt || updatedLead.creationDate || new Date().toISOString().split('T')[0]);
+    const finalLead: Lead = {
+      ...updatedLead,
+      name: `${updatedLead.firstName || ''} ${updatedLead.lastName || ''}`.trim(),
+      statusUpdatedAt
+    };
+    updateLeadMutation.mutate(finalLead);
     if (!navigator.onLine) {
-      const count = addToSyncQueue('UPDATE_LEAD', updatedLead);
+      const count = addToSyncQueue('UPDATE_LEAD', finalLead);
       setPendingChanges(count);
     }
   };
 
   const handleUpdateLeads = (updatedLeadsList: Lead[]) => {
-    const updatedMap = new Map(updatedLeadsList.map(l => [l.id, l]));
-    setLeads(prevLeads => prevLeads.map(lead => {
-      if (updatedMap.has(lead.id)) {
-        const updatedLead = updatedMap.get(lead.id)!;
-        const statusChanged = lead.status !== updatedLead.status;
-        const statusUpdatedAt = statusChanged 
-          ? new Date().toISOString().split('T')[0] 
-          : (lead.statusUpdatedAt || lead.creationDate || new Date().toISOString().split('T')[0]);
-        return { 
-          ...lead, 
-          ...updatedLead, 
-          name: `${updatedLead.firstName || ''} ${updatedLead.lastName || ''}`.trim(),
-          statusUpdatedAt
-        };
+    updatedLeadsList.forEach(lead => {
+      updateLeadMutation.mutate(lead);
+      if (!navigator.onLine) {
+        addToSyncQueue('UPDATE_LEAD', lead);
       }
-      return lead;
-    }));
+    });
     if (!navigator.onLine) {
-      updatedLeadsList.forEach(l => {
-        addToSyncQueue('UPDATE_LEAD', l);
-      });
       setPendingChanges(getSyncQueue().length);
     }
   };
   
   const handleDeleteLeads = (leadIdsToDelete: string[]) => {
-    setLeads(prevLeads => prevLeads.filter(lead => !leadIdsToDelete.includes(lead.id)));
+    leadIdsToDelete.forEach(id => deleteLeadMutation.mutate(id));
     if (!navigator.onLine) {
       const count = addToSyncQueue('DELETE_LEAD', leadIdsToDelete);
       setPendingChanges(count);
@@ -508,45 +583,40 @@ function MainApp() {
   };
 
   const handleAddContact = (contactData: Omit<Contact, 'id' | 'lastActivity'>) => {
-    const newContact: Contact = {
+    const newContact = {
       ...contactData,
-      id: `C${Date.now()}`,
       lastActivity: 'Just now',
       owner: currentUser.name,
-    } as Contact;
-    setContacts(prevContacts => [newContact, ...prevContacts]);
+    };
+    createContactMutation.mutate(newContact);
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('ADD_CONTACT', newContact));
+      setPendingChanges(addToSyncQueue('ADD_CONTACT', newContact as Contact));
     }
   };
 
   const handleUpdateContact = (updatedContact: Contact) => {
-    setContacts(prevContacts => prevContacts.map(c => 
-      c.id === updatedContact.id ? updatedContact : c
-    ));
+    updateContactMutation.mutate(updatedContact);
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('UPDATE_CONTACT', updatedContact));
+      setPendingChanges(addToSyncQueue('UPDATE_CONTACT', updatedContact));
     }
   };
 
   const handleAddAccount = (newAccount: Account) => {
-    setAccounts(prevAccounts => [...prevAccounts, newAccount]);
+    createAccountMutation.mutate(newAccount);
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('ADD_ACCOUNT', newAccount));
+      setPendingChanges(addToSyncQueue('ADD_ACCOUNT', newAccount));
     }
   };
 
   const handleUpdateAccount = (updatedAccount: Account) => {
-    setAccounts(prevAccounts => prevAccounts.map(a => 
-      a.id === updatedAccount.id ? updatedAccount : a
-    ));
+    saveStateToStorage('accounts', accounts.map(a => a.id === updatedAccount.id ? updatedAccount : a));
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('UPDATE_ACCOUNT', updatedAccount));
+      setPendingChanges(addToSyncQueue('UPDATE_ACCOUNT', updatedAccount));
     }
   };
 
   const handleDeleteAccount = (accountId: string) => {
-    setAccounts(prevAccounts => prevAccounts.filter(a => a.id !== accountId));
+    saveStateToStorage('accounts', accounts.filter(a => a.id !== accountId));
   };
 
   const handleAddCall = (callData: Omit<Call, 'id'>) => {
@@ -554,19 +624,23 @@ function MainApp() {
       ...callData,
       id: `CALL-${Date.now()}`,
     };
-    setCalls(prevCalls => [newCall, ...prevCalls]);
+    const updated = [newCall, ...calls];
+    saveStateToStorage('calls', updated);
   };
 
   const handleAddMeeting = (newMeeting: Meeting) => {
-    setMeetings(prev => [...prev, newMeeting]);
+    const updated = [...meetings, newMeeting];
+    saveStateToStorage('meetings', updated);
   };
 
   const handleUpdateMeeting = (updatedMeeting: Meeting) => {
-    setMeetings(prev => prev.map(m => m.id === updatedMeeting.id ? updatedMeeting : m));
+    const updated = meetings.map(m => m.id === updatedMeeting.id ? updatedMeeting : m);
+    saveStateToStorage('meetings', updated);
   };
 
   const handleDeleteMeeting = (meetingId: string) => {
-    setMeetings(prev => prev.filter(m => m.id !== meetingId));
+    const updated = meetings.filter(m => m.id !== meetingId);
+    saveStateToStorage('meetings', updated);
   };
 
   const handleAddDeal = (newDeal: Deal) => {
@@ -583,20 +657,18 @@ function MainApp() {
       ...newDeal,
       activities
     };
-    setDeals(prevDeals => [...prevDeals, dealWithActivity]);
+    createDealMutation.mutate(dealWithActivity);
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('ADD_DEAL', dealWithActivity));
+      setPendingChanges(addToSyncQueue('ADD_DEAL', dealWithActivity));
     }
   };
 
   const handleUpdateDeal = (updatedDeal: Deal) => {
-    setDeals(prevDeals => {
-      const oldDeal = prevDeals.find(d => d.id === updatedDeal.id);
-      if (!oldDeal) return prevDeals;
+    const oldDeal = deals.find(d => d.id === updatedDeal.id);
+    const newActivities: Activity[] = [];
+    const timestamp = new Date().toISOString();
 
-      const newActivities: Activity[] = [];
-      const timestamp = new Date().toISOString();
-
+    if (oldDeal) {
       if (oldDeal.stage !== updatedDeal.stage) {
         newActivities.push({ id: Date.now().toString() + 's', type: 'stage_change', description: `Stage updated to ${updatedDeal.stage}`, timestamp });
       }
@@ -606,47 +678,46 @@ function MainApp() {
       if (oldDeal.probability !== updatedDeal.probability) {
         newActivities.push({ id: Date.now().toString() + 'p', type: 'probability_change', description: `Probability updated from ${oldDeal.probability}% to ${updatedDeal.probability}%`, timestamp });
       }
+    }
 
-      const hasManualActivity = updatedDeal.activities && updatedDeal.activities.length > (oldDeal.activities?.length || 0);
-      if (newActivities.length === 0 && !hasManualActivity && JSON.stringify(oldDeal) !== JSON.stringify(updatedDeal)) {
-         newActivities.push({ id: Date.now().toString() + 'u', type: 'update', description: `Deal details updated`, timestamp });
-      }
+    const hasManualActivity = oldDeal && updatedDeal.activities && updatedDeal.activities.length > (oldDeal.activities?.length || 0);
+    if (newActivities.length === 0 && !hasManualActivity && oldDeal && JSON.stringify(oldDeal) !== JSON.stringify(updatedDeal)) {
+      newActivities.push({ id: Date.now().toString() + 'u', type: 'update', description: `Deal details updated`, timestamp });
+    }
 
-      const baseActivities = updatedDeal.activities && updatedDeal.activities.length >= (oldDeal.activities?.length || 0) 
-        ? updatedDeal.activities 
-        : (oldDeal.activities || []);
+    const baseActivities = oldDeal && updatedDeal.activities && updatedDeal.activities.length >= (oldDeal.activities?.length || 0) 
+      ? updatedDeal.activities 
+      : (oldDeal?.activities || []);
 
-      const finalDeal = {
-        ...updatedDeal,
-        activities: [...baseActivities, ...newActivities]
-      };
+    const finalDeal = {
+      ...updatedDeal,
+      activities: [...baseActivities, ...newActivities]
+    };
 
-      if (!navigator.onLine) {
-          setPendingChanges(addToSyncQueue('UPDATE_DEAL', finalDeal));
-      }
-
-      return prevDeals.map(d => d.id === updatedDeal.id ? finalDeal : d);
-    });
+    updateDealMutation.mutate(finalDeal);
+    if (!navigator.onLine) {
+      setPendingChanges(addToSyncQueue('UPDATE_DEAL', finalDeal));
+    }
   };
 
   const handleAddTask = (newTask: Task) => {
-    setTasks(prev => [newTask, ...prev]);
+    createTaskMutation.mutate(newTask);
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('ADD_TASK', newTask));
+      setPendingChanges(addToSyncQueue('ADD_TASK', newTask));
     }
   };
 
   const handleUpdateTask = (updatedTask: Task) => {
-    setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    updateTaskMutation.mutate(updatedTask);
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('UPDATE_TASK', updatedTask));
+      setPendingChanges(addToSyncQueue('UPDATE_TASK', updatedTask));
     }
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId));
+    deleteTaskMutation.mutate(taskId);
     if (!navigator.onLine) {
-        setPendingChanges(addToSyncQueue('DELETE_TASK', taskId));
+      setPendingChanges(addToSyncQueue('DELETE_TASK', taskId));
     }
   };
 
@@ -958,10 +1029,10 @@ function MainApp() {
         return <ReportingBI />;
       case 'data_management':
         return <DataManagement
-            contacts={contacts} setContacts={setContacts}
-            leads={leads} setLeads={setLeads}
-            accounts={accounts} setAccounts={setAccounts}
-            deals={deals} setDeals={setDeals}
+            contacts={contacts} setContacts={handleBulkSetContacts}
+            leads={leads} setLeads={handleBulkSetLeads}
+            accounts={accounts} setAccounts={handleBulkSetAccounts}
+            deals={deals} setDeals={handleBulkSetDeals}
         />;
       case 'ai_governance':
         return <AIGovernance />;
@@ -972,11 +1043,11 @@ function MainApp() {
       case 'communications':
         return <CommunicationHub 
           contacts={contacts}
-          setContacts={setContacts}
+          setContacts={handleBulkSetContacts}
           tasks={tasks}
-          setTasks={setTasks}
+          setTasks={handleBulkSetTasks}
           leads={leads}
-          setLeads={setLeads}
+          setLeads={handleBulkSetLeads}
         />;
       case 'audit_logs':
         return <AuditLogs />;
@@ -986,6 +1057,58 @@ function MainApp() {
         return <Observability />;
       case 'tenancy':
         return <TenantManagement />;
+      case 'ai_command_center':
+        return <AICommandCenter onNavigate={(view, id) => {
+          if (view === 'leads' && id) {
+            setSelectedLeadId(id);
+            setCurrentView('leads');
+          } else {
+            setCurrentView(view);
+          }
+        }} />;
+      case 'ai_agents':
+        return <AgentManagement onNavigate={(view) => setCurrentView(view)} />;
+      case 'ai_agent_runs':
+      case 'ai_runs':
+      case 'ai_runtime':
+        return <AgentRunsView onNavigate={(view) => setCurrentView(view)} />;
+      case 'ai_workflows':
+        return <WorkflowsView onNavigate={(view) => setCurrentView(view)} />;
+      case 'ai_skills':
+        return <SkillsView onNavigate={(view) => setCurrentView(view)} />;
+      case 'ai_evaluations':
+        return <SkillEvaluationsView onNavigate={(view) => setCurrentView(view)} />;
+      case 'ai_capabilities':
+        return <CapabilitiesMatrixView onNavigate={(view) => setCurrentView(view)} />;
+      case 'ai_actions':
+        return <AIActionsView onNavigate={(view, id) => {
+          if (view === 'leads' && id) {
+            setSelectedLeadId(id);
+            setCurrentView('leads');
+          } else {
+            setCurrentView(view);
+          }
+        }} />;
+      case 'ai_approvals':
+        return <AIApprovalsView onNavigate={(view, id) => {
+          if (view === 'leads' && id) {
+            setSelectedLeadId(id);
+            setCurrentView('leads');
+          } else {
+            setCurrentView(view);
+          }
+        }} />;
+      case 'ai_insights':
+        return <AIInsightsView onNavigate={(view, id) => {
+          if (view === 'leads' && id) {
+            setSelectedLeadId(id);
+            setCurrentView('leads');
+          } else {
+            setCurrentView(view);
+          }
+        }} />;
+      case 'knowledge_base':
+        return <KnowledgeBaseView onNavigate={(view) => setCurrentView(view)} />;
       default: return <Dashboard leads={leads} deals={deals} tasks={tasks} meetings={meetings} calls={calls} isDark={isDark} pipelineGoal={pipelineGoal} userRole={userRole} />;
     }
   };
@@ -1147,7 +1270,34 @@ function MainApp() {
           {renderContent()}
         </main>
         
-        {currentView !== 'document-editor' && <AIChat leads={leads} deals={deals} />}
+        {currentView !== 'document-editor' && (
+          <AICopilotDock 
+            onNavigate={(view, id) => {
+              if (view === 'leads' && id) {
+                setSelectedLeadId(id);
+                setCurrentView('leads');
+              } else {
+                setCurrentView(view);
+              }
+            }}
+            currentView={currentView}
+            selectedEntity={
+              selectedLeadId && currentView === 'leads' ? (() => {
+                const l = leads.find(lead => lead.id === selectedLeadId);
+                return l ? {
+                  type: 'lead' as const,
+                  id: l.id,
+                  name: l.name,
+                  stage: l.status,
+                  score: l.score,
+                  owner: l.owner
+                } : undefined;
+              })() : undefined
+            }
+            userName={currentUser?.name || 'Alex Chen'}
+            userRole={userRole?.name || 'Sales Manager'}
+          />
+        )}
       </div>
 
       {/* Workflow Floating Toast Alerts */}
@@ -1166,7 +1316,7 @@ function MainApp() {
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Workflow SLA Trigger</span>
                     <button 
-                      onClick={() => setWorkflowAlerts(prev => prev.filter(a => a.id !== alert.id))}
+                      onClick={() => setDismissedAlertIds(prev => [...prev, alert.id])}
                       className="text-slate-400 hover:text-white transition-colors cursor-pointer"
                     >
                       <IconX className="w-4 h-4" />
@@ -1180,7 +1330,7 @@ function MainApp() {
               </div>
               <div className="flex gap-2 justify-end pt-2.5 border-t border-slate-800">
                 <button 
-                  onClick={() => setWorkflowAlerts(prev => prev.filter(a => a.id !== alert.id))}
+                  onClick={() => setDismissedAlertIds(prev => [...prev, alert.id])}
                   className="px-3 py-1.5 text-[11px] font-bold text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all cursor-pointer"
                 >
                   Dismiss
@@ -1188,7 +1338,7 @@ function MainApp() {
                 <button 
                   onClick={() => {
                     handleNavigateToLeads(alert.leadId);
-                    setWorkflowAlerts(prev => prev.filter(a => a.id !== alert.id));
+                    setDismissedAlertIds(prev => [...prev, alert.id]);
                   }}
                   className="px-3 py-1.5 text-[11px] font-bold bg-primary-600 text-white hover:bg-primary-500 rounded-lg shadow-md shadow-primary-600/20 transition-all flex items-center gap-1 cursor-pointer"
                 >
@@ -1203,9 +1353,11 @@ function MainApp() {
   );
 }
 
+const DEFAULT_COLLAB_USER = { name: 'Demo User', email: 'user@example.com' };
+
 export function App() {
   return (
-    <CollaborationProvider currentUser={{ name: 'Demo User', email: 'user@example.com' }}>
+    <CollaborationProvider currentUser={DEFAULT_COLLAB_USER}>
       <MainApp />
     </CollaborationProvider>
   );

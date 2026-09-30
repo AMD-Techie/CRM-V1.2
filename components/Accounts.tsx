@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Account, Contact, Deal, Lead, Meeting, Call, Document, RoleDefinition, User } from '../types';
 import { IconBuilding, IconFilter, IconPhone, IconX, IconGlobe, IconUser, IconArrowUp, IconArrowDown, IconMapPin, IconSparkles, IconAlertTriangle } from './Icons';
 import AccountDetail from './AccountDetail';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 import { findAccountLocationAndNearby } from '../services/geminiService';
 import { validatePhone, validateUrl, validateRequired, ValidationErrors } from '../lib/validation';
 
@@ -309,7 +310,14 @@ const Accounts: React.FC<AccountsProps> = ({
     <div className="space-y-6 animate-fade-in h-full flex flex-col">
       <div className="flex justify-between items-center flex-shrink-0 md:pr-24">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Accounts</h1>
-        {canEdit && (
+        <div className="flex items-center gap-3">
+          <ContextualAIButton
+            entityType="account"
+            label="Ask AI"
+            variant="primary"
+            size="sm"
+          />
+          {canEdit && (
             <button 
                 onClick={() => {
                     setSelectedAccount(null);
@@ -324,6 +332,7 @@ const Accounts: React.FC<AccountsProps> = ({
             + New Account
             </button>
         )}
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm dark:shadow-none overflow-hidden flex flex-col flex-1">

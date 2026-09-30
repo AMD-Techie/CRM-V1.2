@@ -6,6 +6,7 @@ import {
   IconPlus, IconSearch, IconX, IconEdit, IconTrash, 
   IconArrowUp, IconArrowDown, IconList, IconChevronLeft, IconChevronRight 
 } from './Icons';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 
 interface MeetingsProps {
   meetings: Meeting[];
@@ -370,12 +371,20 @@ const Meetings: React.FC<MeetingsProps> = ({ meetings, contacts = [], accounts =
                 <button onClick={() => setViewMode('day')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${viewMode === 'day' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-600 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>Day</button>
             </div>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500 shadow-lg shadow-primary-500/20 transition-all flex items-center"
-        >
-          <IconPlus className="w-4 h-4 mr-2" /> New Meeting
-        </button>
+        <div className="flex items-center gap-3">
+          <ContextualAIButton
+            entityType="meeting"
+            label="Ask AI"
+            variant="primary"
+            size="sm"
+          />
+          <button 
+            onClick={() => handleOpenModal()}
+            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500 shadow-lg shadow-primary-500/20 transition-all flex items-center"
+          >
+            <IconPlus className="w-4 h-4 mr-2" /> New Meeting
+          </button>
+        </div>
       </div>
 
       {viewMode === 'list' ? (

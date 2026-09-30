@@ -42,6 +42,7 @@ import {
 } from 'recharts';
 import { formatCurrency } from '../lib/utils';
 import ActivityIntensityHeatmap from './ActivityIntensityHeatmap';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 
 interface DashboardProps {
   leads: Lead[];
@@ -1206,6 +1207,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               {/* Action Buttons & Time Filter */}
               <div className="flex flex-wrap items-center gap-3 shrink-0">
+                  {/* Contextual AI Copilot Button */}
+                  <ContextualAIButton
+                    label="Copilot Radar"
+                    variant="primary"
+                    size="sm"
+                    initialPrompt="Summarize executive pipeline health and top pending approvals"
+                  />
+
                   <button 
                       onClick={() => setQuickModal('lead')}
                       className="px-3.5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-sm transition-all flex items-center gap-1.5"

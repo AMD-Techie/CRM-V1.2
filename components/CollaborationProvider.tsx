@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 export interface CollaborationUser {
@@ -44,12 +44,19 @@ export const CollaborationProvider: React.FC<{ children: ReactNode, currentUser:
   const [locks, setLocks] = useState<Record<string, Lock>>({});
   const [commentsStore, setCommentsStore] = useState<Record<string, Comment[]>>({});
 
+  const socketRef = useRef<Socket | null>(null);
+  const commentsStoreRef = useRef<Record<string, Comment[]>>({});
+  commentsStoreRef.current = commentsStore;
+
+  const currentUserName = currentUser?.name || 'Demo User';
+  const currentUserEmail = currentUser?.email || 'user@example.com';
+
   useEffect(() => {
-    // Only connect if we don't have a socket yet
-    const newSocket = io(); // Connects to same host since we serve from same express server
+    const newSocket = io();
+    socketRef.current = newSocket;
 
     newSocket.on('connect', () => {
-      newSocket.emit('join', { name: currentUser.name, email: currentUser.email });
+      newSocket.emit('join', { name: currentUserName, email: currentUserEmail });
       newSocket.emit('get_initial_state');
     });
 
@@ -72,49 +79,61 @@ export const CollaborationProvider: React.FC<{ children: ReactNode, currentUser:
 
     return () => {
       newSocket.disconnect();
+      socketRef.current = null;
     };
-  }, [currentUser.name, currentUser.email]);
+  }, [currentUserName, currentUserEmail]);
 
-  const addComment = (entityId: string, text: string, mentions: string[] = []) => {
-    if (socket) {
-      socket.emit('add_comment', { entityId, text, mentions });
+  const addComment = useCallback((entityId: string, text: string, mentions: string[] = []) => {
+    if (socketRef.current) {
+      socketRef.current.emit('add_comment', { entityId, text, mentions });
     }
-  };
+  }, []);
 
-  const getEntityComments = (entityId: string) => {
-      if(socket && !commentsStore[entityId]) {
-         socket.emit('get_comments', { entityId });
-         return [];
-      }
-      return commentsStore[entityId] || [];
-  };
-
-  const lockRecord = (entityId: string) => {
-    if (socket) {
-      socket.emit('lock_record', { entityId });
+  const getEntityComments = useCallback((entityId: string) => {
+    if (socketRef.current && !commentsStoreRef.current[entityId]) {
+      socketRef.current.emit('get_comments', { entityId });
+      return [];
     }
-  };
+    return commentsStoreRef.current[entityId] || [];
+  }, []);
 
-  const unlockRecord = (entityId: string) => {
-    if (socket) {
-      socket.emit('unlock_record', { entityId });
+  const lockRecord = useCallback((entityId: string) => {
+    if (socketRef.current) {
+      socketRef.current.emit('lock_record', { entityId });
     }
-  };
+  }, []);
 
-  const navigate = (view: string, targetId?: string) => {
-    if (socket) {
-      socket.emit('navigate', { view, targetId });
+  const unlockRecord = useCallback((entityId: string) => {
+    if (socketRef.current) {
+      socketRef.current.emit('unlock_record', { entityId });
     }
-  };
+  }, []);
 
-  const getUsersInView = (view: string, targetId?: string) => {
-    return activeUsers.filter(u => u.view === view && u.targetId === (targetId || null) && u.id !== socket?.id);
-  };
+  const navigate = useCallback((view: string, targetId?: string) => {
+    if (socketRef.current) {
+      socketRef.current.emit('navigate', { view, targetId });
+    }
+  }, []);
+
+  const getUsersInView = useCallback((view: string, targetId?: string) => {
+    const currentSocketId = socketRef.current?.id;
+    return activeUsers.filter(u => u.view === view && u.targetId === (targetId || null) && u.id !== currentSocketId);
+  }, [activeUsers]);
+
+  const value = useMemo(() => ({
+    socket,
+    activeUsers,
+    locks,
+    getEntityComments,
+    addComment,
+    lockRecord,
+    unlockRecord,
+    navigate,
+    getUsersInView
+  }), [socket, activeUsers, locks, getEntityComments, addComment, lockRecord, unlockRecord, navigate, getUsersInView]);
 
   return (
-    <CollaborationContext.Provider value={{
-      socket, activeUsers, locks, getEntityComments, addComment, lockRecord, unlockRecord, navigate, getUsersInView
-    }}>
+    <CollaborationContext.Provider value={value}>
       {children}
     </CollaborationContext.Provider>
   );

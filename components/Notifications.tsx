@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Task, Lead } from '../types';
 import { IconBell, IconCheckCircle } from './Icons';
 
@@ -12,12 +12,9 @@ interface NotificationsProps {
 
 const Notifications: React.FC<NotificationsProps> = ({ tasks, leads = [], onNavigateToTasks, onNavigateToLeads }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [overdueTasks, setOverdueTasks] = useState<Task[]>([]);
-  const [upcomingTasks, setUpcomingTasks] = useState<Task[]>([]);
-  const [stagnantLeads, setStagnantLeads] = useState<Lead[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const { overdueTasks, upcomingTasks } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize today's date
 
@@ -40,11 +37,10 @@ const Notifications: React.FC<NotificationsProps> = ({ tasks, leads = [], onNavi
       }
     });
 
-    setOverdueTasks(overdue);
-    setUpcomingTasks(upcoming);
+    return { overdueTasks: overdue, upcomingTasks: upcoming };
   }, [tasks]);
 
-  useEffect(() => {
+  const stagnantLeads = useMemo(() => {
     const today = new Date();
     const stagnant: Lead[] = [];
 
@@ -61,7 +57,7 @@ const Notifications: React.FC<NotificationsProps> = ({ tasks, leads = [], onNavi
       }
     });
 
-    setStagnantLeads(stagnant);
+    return stagnant;
   }, [leads]);
 
   // Handle clicks outside the popover to close it

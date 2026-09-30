@@ -28,6 +28,7 @@ import { generateAccountInsights, findAccountLocationAndNearby, generateAccountD
 import PresenceIndicators from './PresenceIndicators';
 import RecordLockBadge from './RecordLockBadge';
 import SharedComments from './SharedComments';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 
 interface AccountDetailProps {
   account: Account;
@@ -300,6 +301,17 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account, onBack, onEdit, 
             </div>
             </div>
             <div className="flex items-center gap-3">
+                {/* Contextual AI Copilot Button */}
+                <ContextualAIButton
+                  entityType="account"
+                  entityId={account.id}
+                  entityName={account.name}
+                  entityOwner={account.owner}
+                  label="Ask AI"
+                  variant="primary"
+                  size="md"
+                />
+
                 {/* Create Document Dropdown */}
                 <div className="relative">
                     <button 

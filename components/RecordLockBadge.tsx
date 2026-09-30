@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useCollaboration } from './CollaborationProvider';
 import { IconLock } from './Icons';
 
@@ -8,25 +8,30 @@ interface RecordLockBadgeProps {
 
 const RecordLockBadge: React.FC<RecordLockBadgeProps> = ({ entityId }) => {
   const { locks, socket, lockRecord, unlockRecord } = useCollaboration();
-  const [hasAttemptedLock, setHasAttemptedLock] = useState(false);
   
   const currentLock = locks[entityId];
   const isLockedByMe = currentLock?.userId === socket?.id;
   const isLockedByOther = currentLock && !isLockedByMe;
 
+  const isLockedByMeRef = useRef(false);
+  isLockedByMeRef.current = isLockedByMe;
+
+  const entityIdRef = useRef(entityId);
+  entityIdRef.current = entityId;
+
+  const unlockRecordRef = useRef(unlockRecord);
+  unlockRecordRef.current = unlockRecord;
+
   useEffect(() => {
-    // Automatically try to acquire lock when mounting (unless locked by someone else)
-    if (!currentLock && !hasAttemptedLock) {
-       lockRecord(entityId);
-       setHasAttemptedLock(true);
-    }
+    // Automatically try to acquire lock on mount/entity change
+    lockRecord(entityId);
     
     return () => {
-       if (isLockedByMe) {
-          unlockRecord(entityId);
-       }
+      if (isLockedByMeRef.current) {
+        unlockRecordRef.current(entityIdRef.current);
+      }
     };
-  }, [entityId, currentLock, hasAttemptedLock, lockRecord, unlockRecord, isLockedByMe]);
+  }, [entityId, lockRecord]);
 
   if (!isLockedByOther) return null;
 

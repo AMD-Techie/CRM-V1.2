@@ -7,6 +7,7 @@ import { generateDealNextAction, generateSalesPlaybook } from '../services/gemin
 import { formatCurrency } from '../lib/utils';
 import { validateEmail, validatePhone, validateRequired, validateNumber } from '../lib/validation';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell } from 'recharts';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 
 const inputClasses = (error?: string) => `
   w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl transition-all outline-none
@@ -99,8 +100,13 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
   const [selectedQuarterFilter, setSelectedQuarterFilter] = useState<string>('');
 
   const [draggedDealId, setDraggedDealId] = useState<string | null>(null);
-  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   
+  const selectedDeal = useMemo(() => {
+    if (!selectedDealId) return null;
+    return deals.find(d => d.id === selectedDealId) || null;
+  }, [deals, selectedDealId]);
+
   // Config Modal State
   const [editingStages, setEditingStages] = useState<{ id: string, label: string, color: string }[]>([]);
 
@@ -143,16 +149,6 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
   const wrapperRef = useRef<HTMLDivElement>(null);
   const contactWrapperRef = useRef<HTMLDivElement>(null);
 
-  // Sync selectedDeal with deals prop when modal is open to reflect updates immediately
-  useEffect(() => {
-    if (selectedDeal && isModalOpen) {
-      const freshDeal = deals.find(d => d.id === selectedDeal.id);
-      if (freshDeal) {
-        setSelectedDeal(freshDeal);
-      }
-    }
-  }, [deals, isModalOpen]);
-
   // Click outside to close suggestions
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -192,13 +188,13 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
 
   const handleOpenNewDeal = () => {
     if (!canManagePipeline) return;
-    setSelectedDeal(null);
+    setSelectedDealId(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEditDeal = (deal: Deal) => {
     if (!canManagePipeline) return;
-    setSelectedDeal(deal);
+    setSelectedDealId(deal.id);
     setIsModalOpen(true);
   };
 
@@ -217,8 +213,6 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
       activities: [...(selectedDeal.activities || []), newActivity]
     };
     
-    // Optimistic update for smoother UI
-    setSelectedDeal(updatedDeal);
     onUpdateDeal(updatedDeal);
   };
 
@@ -498,7 +492,7 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
     }
 
     setIsModalOpen(false);
-    setSelectedDeal(null);
+    setSelectedDealId(null);
   };
 
   const handleSaveGoal = () => {
@@ -734,6 +728,14 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
                   </button>
               )}
           </div>
+
+          {/* Contextual AI Copilot Entry Point */}
+          <ContextualAIButton
+            entityType="deal"
+            label="Ask AI"
+            variant="primary"
+            size="sm"
+          />
 
           <button
             onClick={() => { setTempGoal(pipelineGoal.toString()); setIsGoalModalOpen(true); }}
@@ -1496,7 +1498,7 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
                 {selectedDeal ? 'Edit Opportunity' : 'Add New Opportunity'}
               </h2>
               <button 
-                onClick={() => { setIsModalOpen(false); setSelectedDeal(null); }} 
+                onClick={() => { setIsModalOpen(false); setSelectedDealId(null); }} 
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
               >
                 <IconX className="w-6 h-6" />
@@ -1697,7 +1699,7 @@ const Pipeline: React.FC<PipelineProps> = ({ deals, accounts = [], contacts = []
                 <div className="pt-4 flex space-x-3">
                   <button
                     type="button"
-                    onClick={() => { setIsModalOpen(false); setSelectedDeal(null); }}
+                    onClick={() => { setIsModalOpen(false); setSelectedDealId(null); }}
                     className="flex-1 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     Cancel

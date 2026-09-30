@@ -7,6 +7,7 @@ import {
 import LeadDetail from './LeadDetail';
 import LeadForm from './LeadForm';
 import { calculateLeadPriority, getLeadPriorityFromScore, LeadScorePriorityInfo } from '../lib/utils';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 
 interface LeadsProps {
   leads: Lead[];
@@ -63,7 +64,7 @@ const Leads: React.FC<LeadsProps> = ({
     onClearSelectedLeadId
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(initialSelectedLeadId || null);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,22 +182,17 @@ const Leads: React.FC<LeadsProps> = ({
     });
   }, [leads]);
 
-  useEffect(() => {
-    if (initialSelectedLeadId) {
-      const foundLead = enrichedLeads.find(l => l.id === initialSelectedLeadId);
-      if (foundLead) {
-        setSelectedLead(foundLead as any);
-        setViewMode('detail');
-      }
-    }
-  }, [initialSelectedLeadId, enrichedLeads]);
+  const selectedLead = useMemo(() => {
+    if (!selectedLeadId) return null;
+    return enrichedLeads.find(l => l.id === selectedLeadId) || null;
+  }, [selectedLeadId, enrichedLeads]);
 
   useEffect(() => {
-    if (selectedLead) {
-      const updatedLead = enrichedLeads.find(l => l.id === selectedLead.id);
-      if (updatedLead) setSelectedLead(updatedLead as any);
+    if (initialSelectedLeadId) {
+      setSelectedLeadId(initialSelectedLeadId);
+      setViewMode('detail');
     }
-  }, [enrichedLeads, selectedLead]);
+  }, [initialSelectedLeadId]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -362,12 +358,12 @@ const Leads: React.FC<LeadsProps> = ({
   if (viewMode === 'create' || (viewMode === 'edit' && selectedLead)) {
     return (
       <LeadForm 
-        onCancel={() => { setViewMode('list'); setSelectedLead(null); }}
+        onCancel={() => { setViewMode('list'); setSelectedLeadId(null); }}
         onSave={(lead) => { 
             if (viewMode === 'create') onAddLead(lead);
-            else if (selectedLead) onUpdateLead({ ...lead, id: selectedLead.id });
+            else if (selectedLeadId) onUpdateLead({ ...lead, id: selectedLeadId });
             setViewMode('list'); 
-            setSelectedLead(null);
+            setSelectedLeadId(null);
         }}
         initialData={viewMode === 'edit' ? selectedLead : null}
         accounts={accounts}
@@ -385,7 +381,7 @@ const Leads: React.FC<LeadsProps> = ({
         lead={selectedLead} 
         onBack={() => { 
           setViewMode('list'); 
-          setSelectedLead(null); 
+          setSelectedLeadId(null); 
           if (onClearSelectedLeadId) onClearSelectedLeadId();
         }}
         onEdit={() => setViewMode('edit')}
@@ -393,7 +389,7 @@ const Leads: React.FC<LeadsProps> = ({
           if (window.confirm('Are you sure you want to delete this lead?')) {
             onDeleteLeads([selectedLead.id]);
             setViewMode('list');
-            setSelectedLead(null);
+            setSelectedLeadId(null);
           }
         }}
         onNurture={() => {}}
@@ -421,6 +417,16 @@ const Leads: React.FC<LeadsProps> = ({
       <div className="flex justify-between items-center flex-shrink-0 md:pr-24">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Leads</h1>
         <div className="flex items-center gap-3">
+          {selectedLeadIds.size > 0 && (
+            <ContextualAIButton
+              entityType="lead"
+              selectedEntityIds={Array.from(selectedLeadIds)}
+              selectedEntityNames={leads.filter(l => selectedLeadIds.has(l.id)).map(l => l.name)}
+              label={`Triage ${selectedLeadIds.size} Selected`}
+              variant="primary"
+              size="sm"
+            />
+          )}
           {canExport && (
             <button 
               onClick={handleExportCSV} 
@@ -533,7 +539,7 @@ const Leads: React.FC<LeadsProps> = ({
                 <tr 
                     key={lead.id} 
                     className={`group transition-all duration-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60 ${index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-900/40'}`}
-                    onClick={() => { setSelectedLead(lead); setViewMode('detail'); }}
+                    onClick={() => { setSelectedLeadId(lead.id); setViewMode('detail'); }}
                 >
                   <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" checked={selectedLeadIds.has(lead.id)} onChange={() => toggleSelectLead(lead.id)} className="rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4" />

@@ -14,6 +14,7 @@ import PresenceIndicators from './PresenceIndicators';
 import RecordLockBadge from './RecordLockBadge';
 import SharedComments from './SharedComments';
 import { useCollaboration } from './CollaborationProvider';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -100,7 +101,7 @@ const LeadDetail: React.FC<LeadDetailProps> = ({
     };
     fetchSuggestions();
     return () => { isMounted = false; };
-  }, [lead]);
+  }, [lead.id, lead.status, lead.score]);
 
   const relatedDocuments = useMemo(() => {
       return documents.filter(d => d.relatedTo === lead.company);
@@ -234,6 +235,19 @@ const LeadDetail: React.FC<LeadDetailProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Universal Contextual Copilot Entry Point */}
+          <ContextualAIButton
+            entityType="lead"
+            entityId={lead.id}
+            entityName={lead.name}
+            entityStage={lead.status}
+            entityScore={lead.score}
+            entityOwner={lead.owner}
+            label="Ask AI"
+            variant="primary"
+            size="md"
+          />
+
           {/* Document Generation Dropdown */}
           <div className="relative">
               <button 

@@ -7,6 +7,7 @@ import {
   IconBuilding, IconMail, IconPhone, IconAlertTriangle, IconSettings
 } from './Icons';
 import { validateEmail, validatePhone, validateRequired, ValidationErrors } from '../lib/validation';
+import { ContextualAIButton } from './ai/ContextualAIButton';
 
 interface ContactsProps {
   contacts: Contact[];
@@ -304,9 +305,17 @@ const Contacts: React.FC<ContactsProps> = ({ contacts, accounts = [], onAddConta
                 </button>
             </div>
         </div>
-        <button onClick={() => handleOpenModal()} className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500 shadow-lg shadow-primary-500/20 transition-all flex items-center">
-          <IconPlus className="w-4 h-4 mr-2" /> New Contact
-        </button>
+        <div className="flex items-center gap-3">
+          <ContextualAIButton
+            entityType="contact"
+            label="Ask AI"
+            variant="primary"
+            size="sm"
+          />
+          <button onClick={() => handleOpenModal()} className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-500 shadow-lg shadow-primary-500/20 transition-all flex items-center">
+            <IconPlus className="w-4 h-4 mr-2" /> New Contact
+          </button>
+        </div>
       </div>
 
       <div className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col flex-1 ${viewMode === 'kanban' ? 'bg-transparent border-none shadow-none overflow-visible' : ''}`}>

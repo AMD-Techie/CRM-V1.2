@@ -594,7 +594,7 @@ const Settings: React.FC<SettingsProps> = ({
       'System Administration': ['manage_users', 'manage_settings'],
       'Sales Operations': ['view_leads', 'edit_leads', 'manage_pipeline', 'view_revenue'],
       'Data Governance': ['delete_records', 'export_data'],
-      'Intelligence': ['use_ai_features', 'view_dashboard']
+      'Intelligence & AI': ['use_ai_features', 'manage_agents', 'approve_ai_actions', 'manage_knowledge', 'view_dashboard']
   };
 
   const PERMISSION_DETAILS: Record<Permission, { label: string, desc: string }> = {
@@ -607,7 +607,10 @@ const Settings: React.FC<SettingsProps> = ({
       'export_data': { label: 'Export Data', desc: 'Download CSV/PDF reports' },
       'view_revenue': { label: 'View Revenue', desc: 'Access financial metrics and deal values' },
       'manage_pipeline': { label: 'Manage Pipeline', desc: 'Move deals through stages' },
-      'use_ai_features': { label: 'AI Features', desc: 'Use generative AI tools' }
+      'use_ai_features': { label: 'AI Features', desc: 'Use generative AI tools' },
+      'manage_agents': { label: 'Manage AI Agents', desc: 'Configure agent prompt instructions and tools' },
+      'approve_ai_actions': { label: 'Authorize AI Approvals', desc: 'Sign off on Human-in-the-Loop decision queues' },
+      'manage_knowledge': { label: 'Manage Knowledge Base', desc: 'Upload, index, and manage RAG documentation' }
   };
 
   const getFormattedDate = (format: string, timeFmt: '12h' | '24h') => {

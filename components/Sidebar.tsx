@@ -25,7 +25,10 @@ import {
   IconMessageSquare,
   IconDatabase,
   IconServer,
-  IconShield
+  IconShield,
+  IconZap,
+  IconShare2,
+  IconBook
 } from './Icons';
 import { RoleDefinition, Permission } from '../types';
 
@@ -58,10 +61,24 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, isDark,
     { id: 'calls', label: 'Calls', icon: IconPhone, requiredPerm: 'view_leads' },
     { id: 'campaigns', label: 'Campaigns', icon: IconMegaphone, requiredPerm: 'manage_pipeline' },
     { id: 'documents', label: 'Documents', icon: IconFileText, requiredPerm: 'view_leads' },
-    { id: 'templates', label: 'Templates', icon: IconLayout, requiredPerm: 'manage_settings' }, // Restricted to admins/managers typically
+    { id: 'templates', label: 'Templates', icon: IconLayout, requiredPerm: 'manage_settings' },
     { id: 'visits', label: 'Visits', icon: IconMapPin, requiredPerm: 'view_leads' },
     { id: 'projects', label: 'Projects', icon: IconBriefcase, requiredPerm: 'view_leads' },
     { id: 'support', label: 'Support', icon: IconLifeBuoy, requiredPerm: 'view_leads' },
+  ];
+
+  const aiWorkspaceItems = [
+    { id: 'ai_command_center', label: 'AI Command Center', icon: IconSparkles, requiredPerm: 'use_ai_features', badge: 'Live' },
+    { id: 'ai_agents', label: 'AI Agents Fleet', icon: IconUsers, requiredPerm: 'use_ai_features' },
+    { id: 'ai_agent_runs', label: 'Runtime Console', icon: IconZap, requiredPerm: 'use_ai_features' },
+    { id: 'ai_workflows', label: 'Workflows & Graphs', icon: IconShare2, requiredPerm: 'use_ai_features' },
+    { id: 'ai_skills', label: 'Procedural Skills', icon: IconBook, requiredPerm: 'use_ai_features' },
+    { id: 'ai_evaluations', label: 'Skill Evaluations', icon: IconSparkles, requiredPerm: 'use_ai_features' },
+    { id: 'ai_capabilities', label: 'Capabilities Matrix', icon: IconLock, requiredPerm: 'use_ai_features' },
+    { id: 'ai_actions', label: 'AI Action Queue', icon: IconCheckSquare, requiredPerm: 'use_ai_features' },
+    { id: 'ai_approvals', label: 'Approval Center', icon: IconShield, requiredPerm: 'use_ai_features', badge: '3' },
+    { id: 'ai_insights', label: 'AI Insights Radar', icon: IconSparkles, requiredPerm: 'use_ai_features' },
+    { id: 'knowledge_base', label: 'Knowledge Base', icon: IconDatabase, requiredPerm: 'view_leads' },
   ];
 
   const enterpriseMenuItems = [
@@ -78,6 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, isDark,
   ];
 
   const visibleMenuItems = menuItems.filter(item => hasPermission(item.requiredPerm as Permission));
+  const visibleAIItems = aiWorkspaceItems.filter(item => hasPermission(item.requiredPerm as Permission));
   const visibleEnterpriseItems = enterpriseMenuItems.filter(item => hasPermission(item.requiredPerm as Permission));
 
   // Common transition class for text hiding/showing
@@ -147,6 +165,62 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, isDark,
             </button>
           );
         })}
+
+        {/* AI Workspace Section */}
+        {visibleAIItems.length > 0 && (
+          <>
+            <div className={`my-4 border-t border-slate-800/60 mx-4 transition-opacity duration-300 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}></div>
+
+            <div className={`mb-2 flex items-center justify-between transition-all duration-300 ${isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 px-4'}`}>
+              <p className="text-[10px] font-bold text-primary-400 uppercase tracking-widest whitespace-nowrap flex items-center gap-1.5">
+                <IconSparkles className="w-3 h-3 text-primary-400" />
+                <span>AI Workspace</span>
+              </p>
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-primary-500/20 text-primary-300 border border-primary-500/30">
+                PRO
+              </span>
+            </div>
+            
+            {visibleAIItems.map((item) => {
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setView(item.id)}
+                  className={`relative group flex items-center w-full py-2.5 ml-2 pr-4 text-sm font-medium rounded-l-xl transition-all duration-200 ${
+                    isCollapsed ? 'justify-center mx-2 pl-2 pr-2 rounded-xl' : 'pl-3'
+                  } ${
+                    isActive 
+                    ? 'text-white bg-slate-800/90 shadow-[inset_2px_0_0_0_rgba(99,102,241,1)]' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
+                  }`}
+                  title={isCollapsed ? item.label : ''}
+                >
+                  {isActive && !isCollapsed && (
+                     <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-[#0b1120] to-transparent pointer-events-none" />
+                  )}
+                  
+                  <div className="flex items-center min-w-[24px]">
+                      <item.icon className={`w-5 h-5 transition-transform duration-300 flex-shrink-0 ${isActive ? 'text-primary-400 scale-110 drop-shadow-sm' : 'text-slate-500 group-hover:text-primary-400'}`} />
+                  </div>
+                  <span className={textTransitionClass}>
+                    {item.label}
+                  </span>
+
+                  {item.badge && !isCollapsed && (
+                    <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                      item.badge === 'Live'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </>
+        )}
 
         {/* Enterprise Separator */}
         {visibleEnterpriseItems.length > 0 && (
